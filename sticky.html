@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8" />
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.5/react.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.5/react-dom.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
+ <link rel='stylesheet' href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css" />
+ </head>
+ <body>
+   <div id='content' class='container'>
+   </div>
+   <script type='text/babel'>
+
+		class Pad extends React.Component{
+		  constructor(props) {
+				// has to always be the first line
+				super(props);
+				// extra component setup
+				this.state = { notes: [], nextId: 0 };
+				this.addNote = this.addNote.bind(this);
+				this.notes = this.notes.bind(this);
+				this.deleteNote = this.deleteNote.bind(this);
+				this.editNote = this.editNote.bind(this);
+			}
+
+			addNote(e){
+			  e.preventDefault();
+			  let notes = [{ title: this.refs.title.value, description: this.refs.description.value, id: this.state.nextId}, ...this.state.notes];
+			  this.refs.title.value = null;
+			  this.refs.description.value = null;
+			  document.getElementById("focused1").focus();
+			  this.setState({ notes, nextId: ++this.state.nextId });
+			}
+
+			deleteNote(id) {
+				let notes = this.state.notes;
+				let index = notes.findIndex( x => x.id == id);
+				// delete the item from the array
+				notes.splice(index, 1);
+				// set state - RENDER GETS CALLED
+				this.setState({ notes, nextId: ++this.state.nextId })
+			}
+
+			editNote(id) {
+			  let notes = this.state.notes;
+				let index = notes.findIndex( x => x.id == id);
+			  this.refs.title.value = notes[index].title;
+			  this.refs.description.value = notes[index].description;
+			  this.deleteNote(id);
+			}
+
+			notes(){
+			  let notes = this.state.notes.map( note => {
+					return(<Note key={`note-${note.id}`} title={note.title} description={note.description} id={note.id} deleteNote={this.deleteNote} editNote={this.editNote} />);
+			  });
+			  return notes;
+			}
+
+	    render() {
+	      return( <div className='center'>
+		              <h1>Sticky Notes</h1>
+		              <form onSubmit={this.addNote}>
+		              	<input type='text' required placeholder='title' ref='title' id='focused1' />
+		              	<input type='text' placeholder='description' ref='description' />
+		              	<input type='submit' className='btn' value='Add Note' />
+		             	</form>
+
+		             	<div className='row'>
+		              	{this.notes()}
+		             	</div>
+
+		           	</div>
+		    );
+		  }
+		}
+
+
+		class Note extends React.Component {
+	    constructor(props) {
+	      super(props);
+			}
+
+			render() {
+				return(
+								<div title={this.props.title} description={this.props.description} id={this.props.id} >
+					        <div className="col m4">
+					          <div className="card teal lighten-2">
+					            <div className="card-content white-text">
+					              <span className="card-title">{this.props.title}</span>
+					              <p>{this.props.description}</p>
+					            </div>
+					            <div className="card-action">
+					              <a className="left white-text btn" onClick={() => this.props.editNote(this.props.id)} >Edit</a>
+					              <a className="left white-text btn red" onClick={() => this.props.deleteNote(this.props.id)} >Delete</a>
+					              <br/>
+					            </div>
+					          </div>
+					        </div>
+					  		</div>
+	  		);
+			}
+		
+
+	  }
+
+  	ReactDOM.render(<Pad />, document.getElementById('content'));
+
+   </script>
+  </body>
+</html>
